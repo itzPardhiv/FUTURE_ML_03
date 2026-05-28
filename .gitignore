@@ -1,0 +1,149 @@
+# --- SmartHire AI: Recommended .gitignore ---
+# Ignore Python virtual environments (do NOT commit your .venv)
+.venv/
+venv/
+env/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Outputs and generated files
+outputs/*.csv
+outputs/*.xlsx
+outputs/*.pkl
+
+# Model artifacts
+models/*.pkl
+models/*.joblib
+
+# Large local dataset archives
+data/*.zip
+data/*.rar
+data/*.7z
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.vscode/
+.idea/
+
+# Notebook and Python cache
+*.ipynb
+
+# Logs
+*.log
+
+# Notes:
+# - The .venv directory is intentionally excluded because it contains
+#   platform-specific binary packages and is typically large. Create
+#   a fresh virtual environment after cloning using the commands
+#   in the README.
+# - Do NOT remove user datasets in `data/` unless you have explicit
+#   permission — this .gitignore only prevents committed archives.
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual Environments
+venv/
+ENV/
+env/
+.venv
+env.bak/
+venv.bak/
+.conda/
+
+# IDE and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.env
+.env.local
+*.sublime-project
+*.sublime-workspace
+
+# Testing
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Documentation
+docs/_build/
+site/
+
+# Project Specific
+outputs/
+*.csv
+data/Resume/*.csv
+data/job_descriptions.csv
+data/monster_com-job_sample.csv
+visuals/
+notebooks/
+
+# OS
+*.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Temp Files
+*.tmp
+*.bak
+*.swp
+*~
+.*.swp
+
+# Security
+.secrets
+secrets.json
+*.key
+*.pem
+
+# Logs
+*.log
+logs/
