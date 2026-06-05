@@ -119,25 +119,150 @@ It is intentionally designed to be:
 
 ---
 
-## 📸 Application Preview
+## 🏗️ Project Architecture
 
-### Dashboard
+SmartHire AI follows a modular machine-learning architecture that separates data ingestion, text processing, skill intelligence, scoring, classification, visualization, and export operations.
 
-![SmartHire AI Dashboard](visuals/dashboard.png)
+### End-to-End Processing Workflow
 
-### Resume Screening
+```text
+Resume Dataset / Uploaded Resume
+              │
+              ▼
+┌─────────────────────────────────────────────┐
+│              Data Ingestion                 │
+│                                             │
+│  • Load default resume datasets             │
+│  • Upload custom CSV resume files           │
+│  • Load stored or custom job descriptions   │
+│  • Handle UTF-8, Latin-1, ISO-8859-1, CP1252│
+│  • Automatically detect text columns        │
+└─────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────┐
+│            Text Preprocessing               │
+│                                             │
+│  • Convert input into normalized text       │
+│  • Remove unnecessary symbols and noise     │
+│  • Standardize resume and job-description   │
+│    content                                  │
+└─────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────┐
+│             Skill Intelligence              │
+│                                             │
+│  • Extract skills from the job description  │
+│  • Extract skills from each resume          │
+│  • Identify matched skills                  │
+│  • Identify missing skills                  │
+│  • Calculate skill-gap severity             │
+└─────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────┐
+│          Machine-Learning Analysis          │
+│                                             │
+│  • TF-IDF text vectorization                │
+│  • Resume-to-job cosine similarity          │
+│  • LinearSVC resume-category prediction     │
+│  • Role relevance calculation               │
+└─────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────┐
+│              ATS Scoring Engine             │
+│                                             │
+│  • 50% Resume-to-job similarity             │
+│  • 30% Required skill match                 │
+│  • 20% Role relevance                       │
+│  • Final weighted ATS score                 │
+│  • Candidate recommendation generation      │
+└─────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────┐
+│          Ranking and Explainability         │
+│                                             │
+│  • Sort candidates by ATS score             │
+│  • Generate ranking explanations            │
+│  • Display matched and missing skills       │
+│  • Show predicted resume category           │
+│  • Assign recruiter-friendly recommendation │
+└─────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────┐
+│         Streamlit Dashboard and Export      │
+│                                             │
+│  • Dashboard metrics                        │
+│  • Candidate ranking table                  │
+│  • Score comparison charts                  │
+│  • Skill-gap analysis                       │
+│  • Single-resume analyzer                   │
+│  • Ranked-results CSV export                │
+└─────────────────────────────────────────────┘
+```
 
-![Resume Screening](visuals/resume_screening.png)
+### ATS Scoring Architecture
 
-### Custom Dataset Ranking
+```text
+                    ┌──────────────────────────┐
+                    │      Resume Text         │
+                    └────────────┬─────────────┘
+                                 │
+                                 ▼
+                    ┌──────────────────────────┐
+                    │    Job Description       │
+                    └────────────┬─────────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │                  │                  │
+              ▼                  ▼                  ▼
+┌─────────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+│ TF-IDF Similarity   │ │ Skill Matching   │ │ Role Relevance   │
+│                     │ │                  │ │                  │
+│ Weight: 50%         │ │ Weight: 30%      │ │ Weight: 20%      │
+└──────────┬──────────┘ └────────┬─────────┘ └────────┬─────────┘
+           │                     │                    │
+           └─────────────────────┼────────────────────┘
+                                 │
+                                 ▼
+                    ┌──────────────────────────┐
+                    │     Final ATS Score      │
+                    └────────────┬─────────────┘
+                                 │
+                                 ▼
+                    ┌──────────────────────────┐
+                    │ Candidate Recommendation │
+                    │ and Ranking Explanation  │
+                    └──────────────────────────┘
+```
 
-![Custom Dataset Ranking](visuals/custom_dataset_ranking.png)
+### Core Module Responsibilities
 
-### Single Resume Analyzer
+| Module                   | Responsibility                                                          |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `app/app.py`             | Streamlit interface, navigation, analysis workflow, charts, and exports |
+| `src/data_loader.py`     | Safe dataset loading, encoding fallback, and validation                 |
+| `src/preprocessing.py`   | Resume and job-description text cleaning                                |
+| `src/skill_extractor.py` | Skill extraction, matching, and gap analysis                            |
+| `src/scoring.py`         | Similarity, skill-match, role-match, and ATS score calculation          |
+| `src/category_model.py`  | LinearSVC resume-category classifier training and prediction            |
+| `scripts/`               | Supporting utility and training scripts                                 |
+| `outputs/`               | Generated ranked-candidate CSV exports                                  |
+| `tests/`                 | Automated tests for core project functionality                          |
 
-![Single Resume Analyzer](visuals/single_resume_analyzer.png)
+### Design Principles
 
----
+* **Modular:** Processing, scoring, classification, and UI logic are separated.
+* **Explainable:** Every ranking includes visible scoring components and skill gaps.
+* **Local-first:** The application works without paid external APIs.
+* **CPU-friendly:** Classical machine-learning models keep execution lightweight.
+* **Defensive:** Missing files and invalid datasets produce clear warnings instead of crashes.
+* **Configurable:** ATS scoring weights can be adjusted inside `src/scoring.py`.
+
 
 ## 🧮 ATS Scoring Model
 
