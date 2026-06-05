@@ -195,41 +195,47 @@ def find_text_column(df, possible_cols=None):
 
 def load_default_datasets():
     """Load default datasets safely."""
-    try:
-        resume_path = ROOT / "data" / "Resume" / "Resume.csv"
-        job_desc_path = ROOT / "data" / "job_descriptions.csv"
-        monster_path = ROOT / "data" / "monster_com-job_sample.csv"
-        # Try primary paths first
-        resumes = None
-        job_desc = None
+    resume_path = ROOT / "data" / "Resume" / "Resume.csv"
+    job_desc_path = ROOT / "data" / "job_descriptions.csv"
+    monster_path = ROOT / "data" / "monster_com-job_sample.csv"
 
-        if resume_path.exists():
-            resumes = pd.read_csv(resume_path, on_bad_lines='skip', encoding='utf-8')
-        else:
-            # fallback: sample dataset
-            sample_resume = ROOT / "data" / "sample_resumes.csv"
-            if sample_resume.exists():
-                resumes = pd.read_csv(sample_resume, on_bad_lines='skip', encoding='utf-8')
+    resumes = None
+    job_desc = None
+    monster = pd.DataFrame()
 
-        if job_desc_path.exists():
-            job_desc = pd.read_csv(job_desc_path, on_bad_lines='skip', encoding='utf-8')
-        else:
-            sample_jd = ROOT / "data" / "sample_job_descriptions.csv"
-            if sample_jd.exists():
-                job_desc = pd.read_csv(sample_jd, on_bad_lines='skip', encoding='utf-8')
-        
+    if resume_path.exists():
         try:
-            if monster_path.exists():
-                monster = pd.read_csv(monster_path, on_bad_lines='skip', encoding='latin1')
-            else:
-                monster = pd.DataFrame()
+            resumes = pd.read_csv(resume_path, on_bad_lines='skip', encoding='utf-8')
+        except Exception:
+            resumes = pd.read_csv(resume_path, on_bad_lines='skip', encoding='latin1')
+    else:
+        sample_resume = ROOT / "data" / "sample_resumes.csv"
+        if sample_resume.exists():
+            try:
+                resumes = pd.read_csv(sample_resume, on_bad_lines='skip', encoding='utf-8')
+            except Exception:
+                resumes = pd.read_csv(sample_resume, on_bad_lines='skip', encoding='latin1')
+
+    if job_desc_path.exists():
+        try:
+            job_desc = pd.read_csv(job_desc_path, on_bad_lines='skip', encoding='utf-8')
+        except Exception:
+            job_desc = pd.read_csv(job_desc_path, on_bad_lines='skip', encoding='latin1')
+    else:
+        sample_jd = ROOT / "data" / "sample_job_descriptions.csv"
+        if sample_jd.exists():
+            try:
+                job_desc = pd.read_csv(sample_jd, on_bad_lines='skip', encoding='utf-8')
+            except Exception:
+                job_desc = pd.read_csv(sample_jd, on_bad_lines='skip', encoding='latin1')
+
+    if monster_path.exists():
+        try:
+            monster = pd.read_csv(monster_path, on_bad_lines='skip', encoding='latin1')
         except Exception:
             monster = pd.DataFrame()
-        
-        return resumes, job_desc, monster
-    except Exception as e:
-        st.error(f"Error loading default datasets: {e}")
-        return None, None, None
+
+    return resumes, job_desc, monster
 
 
 def safe_read_csv(uploaded_file):
@@ -305,7 +311,9 @@ def page_dashboard():
             st.metric("🏷️ Categories", "N/A")
     
     with col3:
-        total_jobs = len(job_desc_df) + (len(monster_df) if not monster_df.empty else 0)
+        job_desc_count = len(job_desc_df) if job_desc_df is not None else 0
+        monster_count = len(monster_df) if monster_df is not None and not monster_df.empty else 0
+        total_jobs = job_desc_count + monster_count
         st.metric("📋 Job Sources", f"{total_jobs:,}")
     
     with col4:
@@ -334,7 +342,7 @@ def page_dashboard():
             showlegend=False,
             hovermode="x unified"
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     
@@ -478,7 +486,7 @@ def page_resume_screening():
             category_filter = st.selectbox("Filter by Category", category_options, label_visibility="collapsed")
     
     # Analyze Button
-    if st.button("🔍 Analyze Resumes", use_container_width=True):
+    if st.button("🔍 Analyze Resumes", width="stretch"):
         if not job_description.strip():
             st.warning("⚠️ Please provide a job description")
             st.stop()
@@ -626,7 +634,7 @@ def page_resume_screening():
         
         st.dataframe(
             ranked_df[display_cols].head(top_n),
-            use_container_width=True,
+            width='stretch',
             height=400
         )
         
@@ -645,7 +653,7 @@ def page_resume_screening():
                 color_discrete_sequence=px.colors.sequential.RdYlGn
             )
             fig_scores.update_layout(template="plotly_dark", hovermode="x unified")
-            st.plotly_chart(fig_scores, use_container_width=True)
+            st.plotly_chart(fig_scores, width='stretch')
         
         with col2:
             st.subheader("Skill Gap Analysis")
@@ -661,7 +669,7 @@ def page_resume_screening():
                 color_discrete_sequence=px.colors.sequential.RdBu
             )
             fig_gap.update_layout(template="plotly_dark")
-            st.plotly_chart(fig_gap, use_container_width=True)
+            st.plotly_chart(fig_gap, width='stretch')
         
         # Detailed Explanation
         st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
@@ -700,7 +708,7 @@ def page_resume_screening():
             data=csv,
             file_name="ranked_candidates.csv",
             mime="text/csv",
-            use_container_width=True
+            width='stretch'
         )
 
 
@@ -739,7 +747,7 @@ def page_single_resume():
             label_visibility="collapsed"
         )
     
-    if st.button("⚡ Analyze", use_container_width=True):
+    if st.button("⚡ Analyze", width="stretch"):
         if not resume_text.strip() or not job_text.strip():
             st.warning("⚠️ Please provide both resume and job description")
             st.stop()
