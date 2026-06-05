@@ -1,139 +1,166 @@
 # SmartHire AI — Community Edition
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/) [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-red)](https://streamlit.io/)
+<p align="center">
+  <strong>Explainable, local-first resume screening and candidate ranking.</strong>
+</p>
 
-SmartHire AI is an open-source Applicant Tracking System (ATS) that helps recruiters and hiring teams automatically screen resumes, extract skills, match candidates to job descriptions, compute ATS scores, and rank candidates — all from a polished Streamlit dashboard.
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+">
+  <img src="https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
+  <img src="https://img.shields.io/badge/scikit--learn-ML-F7931E?logo=scikitlearn&logoColor=white" alt="scikit-learn">
+  <a href="https://github.com/itzPardhiv/FUTURE_ML_03/actions"><img src="https://github.com/itzPardhiv/FUTURE_ML_03/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
 
-One-line pitch: Turn resume screening into an efficient, repeatable, and explainable process for hiring teams.
+SmartHire AI is an open-source Applicant Tracking System prototype that helps hiring teams compare resumes against a job description, extract skills, explain score components, and export a ranked review list.
 
----
+> SmartHire AI is a **decision-support tool**, not an autonomous hiring system. Human review is required for every employment decision.
 
-## Business Problem
+## Highlights
 
-Recruiters spend too much time manually screening resumes. SmartHire AI reduces time-to-hire by automating the first-pass screening with clear explainability and recruiter-friendly insights.
+- Explainable ATS score with similarity, skill coverage, and role relevance
+- TF-IDF cosine similarity using unigrams and bigrams
+- Transparent regex-based skill extraction and skill-gap analysis
+- Recruiter-friendly Streamlit dashboard
+- CSV upload and ranked-result export
+- Built-in anonymized sample data
+- Robust CSV encoding fallbacks
+- Automated tests and GitHub Actions CI
+- No paid APIs and no cloud dependency
 
-## Project Objective
+## Scoring Model
 
-Provide a lightweight, local-first ATS prototype suitable for interview portfolios and lightweight deployments. The app is intentionally CPU-friendly and uses scikit-learn TF‑IDF + LinearSVC models.
-
-## Key Features
-
-- Resume screening and ranking
-- Regex-based skill extraction and skill-gap analysis
-- Category classification (LinearSVC) with TF‑IDF features
-- Exportable ranked results (CSV)
-- Streamlit dashboard with visual analytics (Plotly, WordCloud)
-- Safe CSV loading with multi-encoding support
-
-## Architecture & Workflow
-
-1. Data ingestion (CSV resumes & JDs)
-2. Text cleaning and preprocessing
-3. Skill extraction (regex matching)
-4. TF‑IDF vectorization and cosine similarity
-5. ATS score calculation and ranking
-6. Dashboard visualization and export
-
-## Scoring Formula
-
-The default ATS formula is configurable but uses business-prioritized weights:
-
-ATS Score = 50% * Similarity + 30% * Skill Match + 20% * Role Match
-
-- Similarity: TF‑IDF cosine similarity between resume and job description (0-100)
-- Skill Match: % of required skills found in the resume (0-100)
-- Role Match: category relevance heuristic (0-100)
-
-Weights are configurable in `src/scoring.py` and normalized automatically.
-
-## Folder Structure
-
+```text
+ATS Score = 50% × Resume–JD Similarity
+          + 30% × Required-Skill Coverage
+          + 20% × Role Relevance
 ```
+
+The score is intentionally transparent and configurable. It should be used to organize review, not to automatically accept or reject applicants.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A[Resume CSV or pasted resume] --> B[Validation and cleaning]
+    J[Job description] --> B
+    B --> C[TF-IDF similarity]
+    B --> D[Skill extraction]
+    B --> E[Role relevance]
+    C --> F[Explainable scoring engine]
+    D --> F
+    E --> F
+    F --> G[Ranked review table]
+    G --> H[Streamlit dashboard]
+    G --> I[CSV export]
+```
+
+## Repository Structure
+
+```text
 FUTURE_ML_03/
-├─ app/                # Streamlit app pages and UI
-├─ src/                # Core processing & ML helpers
-├─ data/               # Datasets (local, not for git history)
-├─ outputs/            # Generated exports (ignored by git)
-├─ notebooks/          # Optional analysis notebooks
-├─ requirements.txt
-├─ main.py             # Launcher that uses local venv on Windows
-├─ README.md
-└─ .gitignore          # Created to avoid committing local artifacts
+├── app/app.py                 # Streamlit application
+├── src/
+│   ├── category_model.py      # Optional LinearSVC category classifier
+│   ├── data_loader.py         # Safe CSV loading and validation
+│   ├── preprocessing.py       # Text normalization
+│   ├── ranking.py             # End-to-end ranking workflow
+│   ├── scoring.py             # Explainable ATS scoring
+│   └── skill_extractor.py     # Skill detection and gap analysis
+├── data/                      # Small anonymized sample datasets only
+├── tests/                     # Automated tests
+├── outputs/                   # Generated exports; ignored by Git
+├── .github/workflows/ci.yml   # Continuous integration
+├── main.py                    # Cross-platform launcher
+└── requirements.txt
 ```
 
-## Disk size & dataset note
-
-- This repository may be large locally because of a committed virtual environment and datasets. Do NOT commit `.venv/` to GitHub. Use the following commands to remove the venv from git tracking and commit the `.gitignore`:
+## Quick Start
 
 ```bash
-git rm -r --cached .venv
-git add .gitignore
-git commit -m "Remove virtual environment and clean repo tracking"
-```
-
-- After removing `.venv`, verify repo size locally:
-
-```bash
-# Show total size
-du -sh .
-
-# Show size excluding the virtual environment (Linux/macOS)
-du -sh --exclude=.venv .
-```
-
-- Large datasets (CSV) should be stored separately (release assets or cloud) to keep the repository lightweight.
-
-## Installation (recommended)
-
-1. Clone the repo
-
-```bash
-git clone <repo-url>
+git clone https://github.com/itzPardhiv/FUTURE_ML_03.git
 cd FUTURE_ML_03
+python -m venv .venv
 ```
 
-2. Create & activate a virtual environment
+### Activate the environment
+
+Windows PowerShell:
 
 ```powershell
-python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-3. Install dependencies
+Linux or macOS:
 
 ```bash
-pip install -r requirements.txt
+source .venv/bin/activate
 ```
 
-4. Run the app
+### Install and run
 
 ```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 python main.py
 ```
 
-If you see errors about missing datasets, place the sample CSVs under `data/` as described above.
+You may also launch it directly:
 
-## Development notes & assumptions
+```bash
+streamlit run app/app.py
+```
 
-- `src/data_loader.py` centralizes safe CSV loading with encoding fallbacks.
-- `src/scoring.py` now supports configurable weights (normalized).
-- The app is defensive about missing datasets: it will show friendly Streamlit warnings rather than crash.
+## Using Your Own Data
 
-## Why `.venv` is excluded
+Upload a CSV through the application. The app looks for common text-column names such as `Resume`, `resume`, `Resume_str`, `text`, `content`, and `description`. When none exists, it selects the first text-like column.
 
-- Virtual environments contain platform-specific binary wheels and large package caches that bloat git history. Producing a clean, reproducible environment should be done locally by each contributor.
+Recommended format:
 
-## Future improvements
+```csv
+Candidate,Category,Resume
+Candidate 1,Data Scientist,"Python SQL pandas machine learning..."
+Candidate 2,Frontend Developer,"React TypeScript CSS..."
+```
 
-- PDF resume parsing
-- BERT or transformer-based matching for higher quality matches
-- Persistent storage (SQLite or simple REST API)
-- Unit tests and CI
-- Automated dataset download / release assets
+Never commit real candidate resumes, personally identifiable information, secrets, trained-model binaries, generated outputs, or large datasets.
 
----
+## Development
+
+```bash
+python -m compileall app src main.py
+pytest -q
+```
+
+## Responsible Use and Limitations
+
+- TF-IDF measures lexical similarity, not true candidate quality.
+- Regex skill extraction may miss synonyms or context.
+- Role relevance is a simple, inspectable heuristic.
+- Resume datasets can encode historical bias.
+- Scores must never be the sole basis for hiring decisions.
+- Obtain permission before processing applicant data.
+
+## Roadmap
+
+- [ ] PDF and DOCX parsing
+- [ ] Configurable recruiter scorecards
+- [ ] Semantic embeddings with explainability
+- [ ] Bias and fairness evaluation dashboard
+- [ ] SQLite persistence and audit trail
+- [ ] REST API
+- [ ] Deployment guide
+
+## Contributing
+
+Contributions are welcome. Keep pull requests focused, add tests for new behavior, and never include real applicant data.
 
 ## Author
 
-Made by A.J. Pardhiv — contact via GitHub or LinkedIn (placeholders in author section).
+**A. J. Pardhiv**  
+GitHub: [@itzPardhiv](https://github.com/itzPardhiv)  
+LinkedIn: [AJ Pardhiv](https://www.linkedin.com/in/aj-pardhiv-406a40333)
 
+## License
+
+Released under the [MIT License](LICENSE).
